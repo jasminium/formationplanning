@@ -13,7 +13,7 @@ alpha = 1000
 # shape constraint
 beta = 40
 
-# initial positions of the drones
+# initial positions of the particles
 r1 = np.array([0, 0, 0], dtype=np.float64)
 r2 = np.array([1, 0, 0], dtype=np.float64)
 r3 = np.array([1, 0, 1], dtype=np.float64)
@@ -169,7 +169,6 @@ def total_flux(triangle_list):
     return f
 
 
-#7666521588
 
 def solve_constraints():
 
@@ -282,10 +281,11 @@ t0 = time.perf_counter()
 phi_t, phi_ref_t , d_phi_t, vertices_2_t, followers_2_t, index = solve_constraints()
 t1 = time.perf_counter()
 
-np.save('phi_t', phi_t[:index])
-np.save('phi_ref_t', phi_ref_t[:index])
-np.save('d_phi_t', d_phi_t[:index])
-np.save('vertices_2_t', vertices_2_t[:index])
-np.save('followers_2_t', followers_2_t[:index])
-np.save('index', index)
-np.save('p', p)
+dir = 'results/'
+np.save(dir + 'phi_t', phi_t[:index])
+np.save(dir + 'phi_ref_t', phi_ref_t[:index])
+np.save(dir + 'd_phi_t', d_phi_t[:index])
+np.save(dir + 'vertices_2_t', vertices_2_t[:index])
+np.save(dir + 'followers_2_t', followers_2_t[:index])
+np.save(dir + 'index', index)
+np.save(dir + 'p', p)
