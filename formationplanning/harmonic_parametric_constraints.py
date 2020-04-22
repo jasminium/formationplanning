@@ -14,18 +14,23 @@ alpha = 1000
 beta = 40
 
 # initial positions of the particles
-r1 = np.array([0, 0, 0], dtype=np.float64)
-r2 = np.array([1, 0, 0], dtype=np.float64)
-r3 = np.array([1, 0, 1], dtype=np.float64)
-r4 = np.array([0, 0, 1], dtype=np.float64)
 
-r5 = np.array([0, 1, 0], dtype=np.float64)
-r6 = np.array([1, 1, 0], dtype=np.float64)
-r7 = np.array([1, 1, 1], dtype=np.float64)
-r8 = np.array([0, 1, 1], dtype=np.float64)
+h = 20
+# edge length between connected drones
+d = 5
+
+r1 = np.array([0, 0, 0 + h], dtype=np.float64)
+r2 = np.array([d, 0, 0 + h], dtype=np.float64)
+r3 = np.array([d, 0, d + h], dtype=np.float64)
+r4 = np.array([0, 0, d + h], dtype=np.float64)
+
+r5 = np.array([0, d, 0 + h], dtype=np.float64)
+r6 = np.array([d, d, 0 + h], dtype=np.float64)
+r7 = np.array([d, d, d + h], dtype=np.float64)
+r8 = np.array([0, d, d + h], dtype=np.float64)
 
 # position of the source
-p = np.array([-200, 0, 0])
+p = np.array([-200, 0, h])
 
 vertices = [r1, r2, r3, r4, r5, r6, r7, r8]
 

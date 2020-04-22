@@ -1,14 +1,15 @@
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 import matplotlib.pyplot as plt
+import matplotlib.animation
 
-phi_t = np.load('phi_t.npy')
-phi_ref_t = np.load('phi_ref_t.npy')
-d_phi_t = np.load('d_phi_t.npy')
-vertices_2_t = np.load('vertices_2_t.npy')
-followers_2_t = np.load('followers_2_t.npy')
-index = np.load('index.npy')
-p = np.load('p.npy')
+phi_t = np.load('results/phi_t.npy')
+phi_ref_t = np.load('results/phi_ref_t.npy')
+d_phi_t = np.load('results/d_phi_t.npy')
+vertices_2_t = np.load('results/vertices_2_t.npy')
+followers_2_t = np.load('results/followers_2_t.npy')
+index = np.load('results/index.npy')
+p = np.load('results/p.npy')
 
 
 print('Expected flux for boundary box', 4 * np.pi * 6 / 6)
@@ -46,7 +47,7 @@ ax.set_xlabel('X Label')
 ax.set_ylabel('Y Label')
 ax.set_zlabel('Z Label')
 fig.legend()
-plt.savefig('starting_and_finishing_points.png', dpi=330)
+#python plt.savefig('starting_and_finishing_points.png', dpi=330)
 
 
 
@@ -67,7 +68,7 @@ plt.plot(phi_t)
 plt.title('Total Flux')
 plt.xlabel('Iterations')
 plt.ylabel('Total flux')
-plt.savefig('total_flux.png', dpi=330)
+##python plt.savefig('total_flux.png', dpi=330)
 
 # 3d time history of the vertices
 fig = plt.figure(5)
@@ -79,15 +80,15 @@ colors2 = ['GnBu', 'OrRd', 'PuBu', 'YlGn']
 for i in range(0, 4):
     #ax.scatter(vertices_2_t[:, i, 0], vertices_2_t[:, i, 1], vertices_2_t[:, i, 2], cmap=colors[i], c=np.arange(0, iterations), s=2)
     #ax.scatter(followers_2_t[:, i, 0], followers_2_t[:, i, 1], followers_2_t[:, i, 2], cmap=colors2[i], c=np.arange(0, iterations), s=2)
-    ax.scatter(vertices_2_t[:, i, 0], vertices_2_t[:, i, 1], vertices_2_t[:, i, 2], color='red', s=2)
-    ax.scatter(followers_2_t[:, i, 0], followers_2_t[:, i, 1], followers_2_t[:, i, 2], color='green', s=2)
+    ax.scatter(vertices_2_t[:, i, 0], vertices_2_t[:, i, 1], vertices_2_t[:, i, 2], color='red', s=2, label='lead')
+    ax.scatter(followers_2_t[:, i, 0], followers_2_t[:, i, 1], followers_2_t[:, i, 2], color='green', s=2, label='followers'), 
 
 ax.scatter(p[0], p[1], p[2], marker='x', label='Source')
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
 ax.set_zlabel('Z')
 plt.legend()
-plt.savefig('3d_positions.png', dpi=330)
+#python plt.savefig('3d_positions.png', dpi=330)
 
 # plot trajectories
 fig = plt.figure(6, constrained_layout=True)
@@ -104,7 +105,7 @@ for i in range(0, 4):
 plt.xlabel('iterations')
 plt.ylabel('component displacement [m]')
 plt.legend()
-plt.savefig('component_positions.png', dpi=330)
+#python plt.savefig('component_positions.png', dpi=330)
 
 
 fig = plt.figure(7, constrained_layout=True)
@@ -123,7 +124,7 @@ for i in range(0, 4):
 plt.ylabel('speed [ms-1]')
 plt.xlabel('time [s]')
 plt.legend()
-plt.savefig('velocity.png', dpi=330)
+#python plt.savefig('velocity.png', dpi=330)
 
 
 # plot trajectories
@@ -142,17 +143,27 @@ plt.xlabel('iterations')
 plt.ylabel('component displacement [m]')
 plt.legend()
 
-"""
+print('Do antimation')
+
 # animation
-fig = plt.figure(6)
+fig = plt.figure(9)
 ax = fig.add_subplot(111, projection='3d')
 
-ax.set_xlim(-1, 1)
-ax.set_ylim(-1, 1)
-ax.set_zlim(-1, 1)
+#ax.set_xlim(-1, 1)
+#ax.set_ylim(-1, 1)
+#ax.set_zlim(-1, 1)
 
 ax.scatter(p[0], p[1], p[2], marker='x', label='Source')
 
+ax.set_xlim(-200, 10)
+ax.set_ylim(-15, 15)
+ax.set_zlim(0, 40)
+
+
+print(vertices_2_t.shape)
+vertices_2_t = vertices_2_t[::100]
+followers_2_t = followers_2_t[::100]
+print(vertices_2_t.shape)
 
 graph_1 = ax.scatter(vertices_2_t[0, 0, 0], vertices_2_t[0, 0, 1], vertices_2_t[0, 0, 2], color='red', s=2)
 graph_2 = ax.scatter(vertices_2_t[0, 1, 0], vertices_2_t[0, 1, 1], vertices_2_t[0, 1, 2], color='red', s=2)
@@ -180,11 +191,13 @@ def update_graph(j):
 
     #return scatters
 
-ani = matplotlib.animation.FuncAnimation(fig, update_graph, index,
-                               interval=1000, blit=False)
+ani = matplotlib.animation.FuncAnimation(fig, update_graph, 378,
+                               interval=10, blit=False)
 
 Writer = matplotlib.animation.writers['ffmpeg']
-writer = Writer(fps=30, metadata=dict(artist='Me'), bitrate=1800, extra_args=['-vcodec', 'libx264'])
-ani.save('3d-scatted-animated.mp4', writer=writer)
-"""
+writer = Writer(fps=60, metadata=dict(artist='Me'), bitrate=1800, extra_args=['-vcodec', 'libx264'])
+ani.save('results/3d-scatted-animated.mp4', writer=writer)
+
+print("done")
+
 plt.show()

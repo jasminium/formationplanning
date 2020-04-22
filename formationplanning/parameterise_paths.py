@@ -12,50 +12,61 @@ followers_2_t = np.load('results/followers_2_t.npy')
 index = np.load('results/index.npy')
 p = np.load('results/p.npy')
 
+# update period of the virtual stick api
+dt = 0.05
+# maximum speed of the drone in any direction
+s_max = 3
+
+# target arc length per iteration
+# predetermine the correct arc length
+arc_length = s_max * dt
+
+
 def to_time_trajectory(x_it, y_it, z_it):
 
-    # update period of the virtual stick api
-    dt = 0.1
-    # maximum speed of the drone in any direction
-    s_max = 5
-
-    # target arc length per iteration
-    # predetermine the correct arc length
-    arc_length = s_max * dt
-
+    # iteration array for the generated path
     iterations = np.arange(0, x_it.shape[0])
-    iterations_new = np.linspace(0, x_it.shape[0] - 1, x_it.shape[0] *  10)
 
-    fx = interpolate.interp1d(iterations, x_it)
-    fy = interpolate.interp1d(iterations, y_it)
-    fz = interpolate.interp1d(iterations, z_it)
 
+    # interpolate the generated path such that the max distance between
+    # successive points is not greater than the target arc length.
+    fx = interpolate.interp1d(iterations, x_it, kind=1)
+    fy = interpolate.interp1d(iterations, y_it, kind=1)
+    fz = interpolate.interp1d(iterations, z_it, kind=1)
+
+    iterations_new = np.linspace(0, x_it.shape[0] - 1, x_it.shape[0] *  20)
     x_it = fx(iterations_new)
     y_it = fy(iterations_new)
     z_it = fz(iterations_new)
 
-
     # calculate the iteration count which corresponds to the correct arc length travelled
     s = 0
-
-    i = 1
 
     # trajectory in increments of the drone update period
     x_t = []
     y_t = []
     z_t = []
+    # track the calculated arclength
+    s_t = []
 
-    go = True
+    ds_t = []
+
+    i = 1
 
     while i < x_it.shape[0] - 1:
         while s < arc_length:
 
+            # total change in x w.r.t iterations between this point and the previous.
             dx = x_it[i] - x_it[i - 1]
             dy = y_it[i] - y_it[i - 1]
             dz = z_it[i] - z_it[i - 1]
 
+            # total change curve x w.r.t iterations between this point and the previous.
             ds = np.sqrt(dx * dx + dy * dy + dz * dz)
 
+            ds_t.append(ds)
+
+            # increase the total difference travelled
             s += ds
 
             i += 1
@@ -67,10 +78,12 @@ def to_time_trajectory(x_it, y_it, z_it):
         x_t.append(x_it[i])
         y_t.append(y_it[i])
         z_t.append(z_it[i])
+        s_t.append(s)
 
+        # reset the arclength
         s = 0
 
-    return np.array(x_t), np.array(y_t), np.array(z_t)
+    return np.array(x_t), np.array(y_t), np.array(z_t), np.array(s_t), np.array(ds_t)
 
 # first vertex parameteric equation as function of iteration number
 x0_it, y0_it, z0_it =  vertices_2_t[:, 0, 0], vertices_2_t[:, 0, 1], vertices_2_t[:, 0, 2]
@@ -78,15 +91,16 @@ x1_it, y1_it, z1_it =  vertices_2_t[:, 1, 0], vertices_2_t[:, 1, 1], vertices_2_
 x2_it, y2_it, z2_it =  vertices_2_t[:, 2, 0], vertices_2_t[:, 2, 1], vertices_2_t[:, 2, 2]
 x3_it, y3_it, z3_it =  vertices_2_t[:, 3, 0], vertices_2_t[:, 3, 1], vertices_2_t[:, 3, 2]
 
-x0_t, y0_t, z0_t = to_time_trajectory(x0_it, y0_it, z0_it)
-x1_t, y1_t, z1_t = to_time_trajectory(x1_it, y1_it, z1_it)
-x2_t, y2_t, z2_t = to_time_trajectory(x2_it, y2_it, z2_it)
-x3_t, y3_t, z3_t = to_time_trajectory(x3_it, y3_it, z3_it)
+x0_t, y0_t, z0_t, s0_t, ds0_t = to_time_trajectory(x0_it, y0_it, z0_it)
+x1_t, y1_t, z1_t, s1_t, ds1_t = to_time_trajectory(x1_it, y1_it, z1_it)
+x2_t, y2_t, z2_t, s2_t, ds2_t = to_time_trajectory(x2_it, y2_it, z2_it)
+x3_t, y3_t, z3_t, s3_t, ds3_t = to_time_trajectory(x3_it, y3_it, z3_it)
 
 # save the trajectory data
 from pathlib import Path
 dir = 'trajectories/'
 Path(dir).mkdir(parents=True, exist_ok=True)
+
 x0_t.tofile(dir + "x0_t.csv", sep="\n")
 y0_t.tofile(dir + "y0_t.csv", sep="\n")
 z0_t.tofile(dir + "z0_t.csv", sep="\n")
@@ -103,9 +117,6 @@ z3_t.tofile(dir + "z3_t.csv", sep="\n")
 # 3d time history of the vertices
 fig = plt.figure(5)
 ax = fig.add_subplot(111, projection='3d')
-
-colors = ['Greens', 'Reds', 'Blues', 'Purples']
-colors2 = ['GnBu', 'OrRd', 'PuBu', 'YlGn']
 
 it_step = 20
 t_step = 10
@@ -130,11 +141,11 @@ ax.set_zlabel('Z')
 plt.legend()
 
 fig = plt.figure(6)
-t = np.linspace(0, 1, len(x0_t)) * len(x0_t) * 0.1
+t = np.linspace(0, 1, len(x0_t)) * len(x0_t) * 0.05
 plt.title('Trajectory in time')
-plt.plot(t[::10], x0_t[::10], label='x')
-plt.plot(t[::10], y0_t[::10], label='y')
-plt.plot(t[::10], z0_t[::10], label='z')
+plt.scatter(t, x0_t, label='x')
+plt.scatter(t, y0_t, label='y')
+plt.scatter(t, z0_t, label='z')
 
 plt.xlabel('time [s]')
 plt.legend()
@@ -145,6 +156,30 @@ plt.title('Trajectory in iterations')
 plt.plot(x0_it[::100], label='x')
 plt.plot(y0_it[::100], label='y')
 plt.plot(z0_it[::100], label='z')
+
+plt.xlabel('iterations')
+plt.ylabel('displacement [m]')
+plt.legend()
+
+fig = plt.figure(8, constrained_layout=True)
+plt.title('ds')
+plt.plot(ds0_t, label='particle 2')
+plt.plot(ds1_t, label='particle 6')
+plt.plot(ds2_t, label='particle 7')
+plt.plot(ds3_t, label='particle 3')
+
+print("target arc length: {}".format(arc_length))
+
+plt.xlabel('iterations')
+plt.ylabel('displacement [m]')
+plt.legend()
+
+fig = plt.figure(9, constrained_layout=True)
+plt.title('s')
+plt.plot(s0_t, label='particle 2')
+plt.plot(s1_t, label='particle 6')
+plt.plot(s2_t, label='particle 7')
+plt.plot(s3_t, label='particle 3')
 
 plt.xlabel('iterations')
 plt.ylabel('displacement [m]')
