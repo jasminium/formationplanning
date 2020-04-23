@@ -91,10 +91,64 @@ x1_it, y1_it, z1_it =  vertices_2_t[:, 1, 0], vertices_2_t[:, 1, 1], vertices_2_
 x2_it, y2_it, z2_it =  vertices_2_t[:, 2, 0], vertices_2_t[:, 2, 1], vertices_2_t[:, 2, 2]
 x3_it, y3_it, z3_it =  vertices_2_t[:, 3, 0], vertices_2_t[:, 3, 1], vertices_2_t[:, 3, 2]
 
+x4_it, y4_it, z4_it =  followers_2_t[:, 0, 0], followers_2_t[:, 0, 1], followers_2_t[:, 0, 2]
+x5_it, y5_it, z5_it =  followers_2_t[:, 1, 0], followers_2_t[:, 1, 1], followers_2_t[:, 1, 2]
+x6_it, y6_it, z6_it =  followers_2_t[:, 2, 0], followers_2_t[:, 2, 1], followers_2_t[:, 2, 2]
+x7_it, y7_it, z7_it =  followers_2_t[:, 3, 0], followers_2_t[:, 3, 1], followers_2_t[:, 3, 2]
+
 x0_t, y0_t, z0_t, s0_t, ds0_t = to_time_trajectory(x0_it, y0_it, z0_it)
 x1_t, y1_t, z1_t, s1_t, ds1_t = to_time_trajectory(x1_it, y1_it, z1_it)
 x2_t, y2_t, z2_t, s2_t, ds2_t = to_time_trajectory(x2_it, y2_it, z2_it)
 x3_t, y3_t, z3_t, s3_t, ds3_t = to_time_trajectory(x3_it, y3_it, z3_it)
+
+# vertex order
+#[r2, r6, r7, r3]
+
+# follower order
+#[r1, r4, r8, r5]
+
+r2 = np.stack([x0_t, y0_t, z0_t], axis=1)
+r6 = np.stack([x1_t, y1_t, z1_t], axis=1)
+r7 = np.stack([x2_t, y2_t, z2_t], axis=1)
+r3 = np.stack([x3_t, y3_t, z3_t], axis=1)
+
+print(r3.shape)
+
+# now that trajectories are not synchronised in time the have different total times. However we still requried an end point.
+# therefore we can pad the end of the trajectories with each end value.
+it_max = np.array([r.shape[0] for r in [r2, r6, r7, r3]]).max()
+print(it_max)
+
+r2 = np.pad(r2, ((0, it_max - r2.shape[0]), (0, 0)), 'edge')
+r6 = np.pad(r6, ((0, it_max - r6.shape[0]), (0, 0)), 'edge')
+r7 = np.pad(r7, ((0, it_max - r7.shape[0]), (0, 0)), 'edge')
+r3 = np.pad(r3, ((0, it_max - r3.shape[0]), (0, 0)), 'edge')
+
+# generate the follower trajectories from the parameterised vertex trajectories.
+r23 = r3 - r2
+r26 = r6 - r2
+l = np.linalg.norm(r26)
+d = np.cross(r23, r26)
+r1 = r2 + l * (d / np.linalg.norm(d))
+
+r32 = r2 - r3
+r37 = r7 - r3
+d = np.cross(r37, r32)
+l = np.linalg.norm(r37)
+r4 = r3 + l * (d / np.linalg.norm(d))
+
+r73 = r3 - r7
+r76 = r6 - r7
+d = np.cross(r76, r73)
+l = np.linalg.norm(r76)
+r8 = r7 + l * (d / np.linalg.norm(d))
+
+r67 = r7 - r6
+r62 = r2 - r6
+d = np.cross(r62, r67)
+l = np.linalg.norm(r62)
+r5 = r6 + l * (d / np.linalg.norm(d))
+
 
 # save the trajectory data
 from pathlib import Path
@@ -114,6 +168,23 @@ x3_t.tofile(dir + "x3_t.csv", sep="\n")
 y3_t.tofile(dir + "y3_t.csv", sep="\n")
 z3_t.tofile(dir + "z3_t.csv", sep="\n")
 
+r1[:, 0].tofile(dir + "x4_t.csv", sep="\n")
+r1[:, 1].tofile(dir + "y4_t.csv", sep="\n")
+r1[:, 2].tofile(dir + "z4_t.csv", sep="\n")
+
+r4[:, 0].tofile(dir + "x5_t.csv", sep="\n")
+r4[:, 1].tofile(dir + "y5_t.csv", sep="\n")
+r4[:, 2].tofile(dir + "z5_t.csv", sep="\n")
+
+r8[:, 0].tofile(dir + "x6_t.csv", sep="\n")
+r8[:, 1].tofile(dir + "y6_t.csv", sep="\n")
+r8[:, 2].tofile(dir + "z6_t.csv", sep="\n")
+
+r5[:, 0].tofile(dir + "x7_t.csv", sep="\n")
+r5[:, 1].tofile(dir + "y7_t.csv", sep="\n")
+r5[:, 2].tofile(dir + "z7_t.csv", sep="\n")
+
+
 # 3d time history of the vertices
 fig = plt.figure(5)
 ax = fig.add_subplot(111, projection='3d')
@@ -129,6 +200,12 @@ ax.scatter(x2_it[::it_step], y2_it[::it_step], z2_it[::it_step], color='red', s=
 ax.scatter(x2_t[::t_step], y2_t[::t_step], z2_t[::t_step], color='green', s=2, label='time')
 ax.scatter(x3_it[::it_step], y3_it[::it_step], z3_it[::it_step], color='red', s=2, label='iterations')
 ax.scatter(x3_t[::t_step], y3_t[::t_step], z3_t[::t_step], color='green', s=2, label='time')
+
+ax.scatter(r1[:, 0], r1[:, 1], r1[:, 2], color='orange', s=2, label='follower')
+ax.scatter(r8[:, 0], r8[:, 1], r8[:, 2], color='orange', s=2, label='follower')
+ax.scatter(r4[:, 0], r4[:, 1], r4[:, 2], color='orange', s=2, label='follower')
+ax.scatter(r5[:, 0], r5[:, 1], r5[:, 2], color='orange', s=2, label='follower')
+
 
 ax.scatter(p[0], p[1], p[2], marker='x', label='Source')
 ax.set_xlabel('X')
