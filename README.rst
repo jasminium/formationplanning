@@ -5,4 +5,4 @@ A collection of scripts, so far, which generate collision free trajctories for f
 
 The paths are parameterised such that particle travels a constant velocity along the path.
 
-![](dji-drones.gif)
+![example flight](dji-drones.gif)
