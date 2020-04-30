@@ -6,89 +6,85 @@ import copy
 import matplotlib.animation
 import tqdm
 
+class Particles():
 
-iterations = 200000
-# flux constraint
-alpha = 1000
-# shape constraint
-beta = 40
+    def __init__(self, d, h, target):
+        r1 = np.array([0, 0, 0 + h], dtype=np.float64)
+        r2 = np.array([d, 0, 0 + h], dtype=np.float64)
+        r3 = np.array([d, 0, d + h], dtype=np.float64)
+        r4 = np.array([0, 0, d + h], dtype=np.float64)
 
-# initial positions of the particles
+        r5 = np.array([0, d, 0 + h], dtype=np.float64)
+        r6 = np.array([d, d, 0 + h], dtype=np.float64)
+        r7 = np.array([d, d, d + h], dtype=np.float64)
+        r8 = np.array([0, d, d + h], dtype=np.float64)
 
-h = 20
-# edge length between connected drones
-d = 5
+        self.r1 = r1
+        self.r2 = r2
+        self.r3 = r3
+        self.r4 = r4
+        self.r5 = r5
+        self.r6 = r6
+        self.r7 = r7
+        self.r8 = r8
 
-r1 = np.array([0, 0, 0 + h], dtype=np.float64)
-r2 = np.array([d, 0, 0 + h], dtype=np.float64)
-r3 = np.array([d, 0, d + h], dtype=np.float64)
-r4 = np.array([0, 0, d + h], dtype=np.float64)
+        # position of the source
+        self.p = target
+        self.vertices = [r1, r2, r3, r4, r5, r6, r7, r8]
 
-r5 = np.array([0, d, 0 + h], dtype=np.float64)
-r6 = np.array([d, d, 0 + h], dtype=np.float64)
-r7 = np.array([d, d, d + h], dtype=np.float64)
-r8 = np.array([0, d, d + h], dtype=np.float64)
+        self.triangle_list = [
+                            [r1, r2, r3],
+                            [r1, r3, r4],
+                            [r5, r1, r4],
+                            [r5, r4, r8],
+                            [r4, r3, r7],
+                            [r4, r7, r8],
+                            [r5, r6, r2],
+                            [r5, r2, r1],
+                            [r6, r5, r8],
+                            [r6, r8, r7],
 
-# position of the source
-p = np.array([-200, 0, h])
+                            # closing
+                            #[r2, r6, r7],
+                            #[r2, r7, r3]
+                        ]
 
-vertices = [r1, r2, r3, r4, r5, r6, r7, r8]
+        r23 = r3 - r2
+        r26 = r6 - r2
+        r1 = r2 + np.cross(r23, r26)
 
-triangle_list = [
-                    [r1, r2, r3],
-                    [r1, r3, r4],
-                    [r5, r1, r4],
-                    [r5, r4, r8],
-                    [r4, r3, r7],
-                    [r4, r7, r8],
-                    [r5, r6, r2],
-                    [r5, r2, r1],
-                    [r6, r5, r8],
-                    [r6, r8, r7],
+        r32 = r2 - r3
+        r37 = r7 - r3
+        r4 = r3 + np.cross(r37, r32)
 
-                    # closing
-                    #[r2, r6, r7],
-                    #[r2, r7, r3]
-                ]
+        r73 = r3 - r7
+        r76 = r6 - r7
+        r8 = r7 + np.cross(r76, r73)
 
-r23 = r3 - r2
-r26 = r6 - r2
-r1 = r2 + np.cross(r23, r26)
-
-r32 = r2 - r3
-r37 = r7 - r3
-r4 = r3 + np.cross(r37, r32)
-
-r73 = r3 - r7
-r76 = r6 - r7
-r8 = r7 + np.cross(r76, r73)
-
-r67 = r7 - r6
-r62 = r2 - r6
-r5 = r6 + np.cross(r62, r67)
+        r67 = r7 - r6
+        r62 = r2 - r6
+        r5 = r6 + np.cross(r62, r67)
 
 
-# these are the vertices of the right face.
-vertices_2 = [r2, r6, r7, r3]
-vertices_3 = [r1, r4, r8, r5]
+        # these are the vertices of the right face.
+        self.vertices_2 = [r2, r6, r7, r3]
+        # these are the vertices of the left face
+        self.vertices_3 = [r1, r4, r8, r5]
 
-vertices_init = copy.deepcopy(vertices_2)
+        #self.vertices_init = copy.deepcopy(vertices_2)
+        #self.vertices_init_back = copy.deepcopy(vertices_3)
 
-#
-vertices_init_back = copy.deepcopy(vertices_3)
+        # closing triangles
+        self.triangle_list_2 = [
+                            [r2, r7, r6],
+                            [r2, r3, r7]
+        ]
 
-
-# closing triangles
-triangle_list_2 = [
-                    [r2, r7, r6],
-                    [r2, r3, r7]
-]
-
-def face_centre():
-    return 1 / 2 * (r7 - r2)
+def face_centre(particles):
+    return 1 / 2 * (particles.r7 - particles.r2)
 
 
-def calculate_jacobian_2(vertices):
+def calculate_jacobian_2(particles):
     # calculate the jacobian in component order ie.
 
     # [d phi / d c1_x
@@ -104,6 +100,7 @@ def calculate_jacobian_2(vertices):
     # [d phi / d c3_z
     # [d phi / d c4_z
 
+    vertices = particles.vertices_2
 
     # find the jacobian using a central difference
 
@@ -122,10 +119,10 @@ def calculate_jacobian_2(vertices):
             c_i = vertex[i]
 
             vertex[i] = c_i + dc
-            d_u = total_flux(triangle_list_2)
+            d_u = total_flux(particles.triangle_list_2, particles.p)
 
             vertex[i] = c_i - dc
-            d_l = total_flux(triangle_list_2)
+            d_l = total_flux(particles.triangle_list_2, particles.p)
 
             # return vertex to previous state
             vertex[i] = c_i
@@ -166,16 +163,17 @@ def flux_through_t(A, B, C, P):
     #print('phi triangle', phi)
     return phi
 
-def total_flux(triangle_list):
+def total_flux(triangle_list, p):
     f = 0
     for t in triangle_list:
         f = f + flux_through_t(t[0], t[1], t[2], p)
 
     return f
 
+def solve_constraints(particles, iterations, constraints_w):
 
-
-def solve_constraints():
+    alpha = constraints_w[0]
+    beta = constraints_w[1]
 
     # time history variables
     phi_t = []
@@ -201,7 +199,7 @@ def solve_constraints():
     A[8:, 8:] = A_s
     AT = np.transpose(A)
 
-    n_vertices = len(vertices_2)
+    n_vertices = len(particles.vertices_2)
     # number of degrees of freedom
     n = n_vertices * 3
 
@@ -217,14 +215,14 @@ def solve_constraints():
         #alpha = alpha_max / np.linalg.norm(p - ((r7 + r2) * 1 / 2))
 
         # flux through the left face of the bounding box
-        phi = total_flux(triangle_list_2)
+        phi = total_flux(particles.triangle_list_2, particles.p)
         #if phi > 4.5:
         #    break
         phi_ref = np.exp(0.1 * phi)
         #phi_ref = 0.1
         #phi_ref = 1 / phi
 
-        J, d_phi = calculate_jacobian_2(vertices_2)
+        J, d_phi = calculate_jacobian_2(particles)
 
         J = np.array(J)
 
@@ -235,36 +233,32 @@ def solve_constraints():
         delta_c = delta_c.reshape((n_vertices, 3), order='F')
 
         # update the vertices
-        for j, vertex in enumerate(vertices_2):
+        for j, vertex in enumerate(particles.vertices_2):
             vertex += delta_c[j]
 
-        r23 = r3 - r2
-        r26 = r6 - r2
+        r23 = particles.r3 - particles.r2
+        r26 = particles.r6 - particles.r2
         l = np.linalg.norm(r26)
         d = np.cross(r23, r26)
-        r1 = r2 + l * (d / np.linalg.norm(d))
+        particles.r1 = particles.r2 + l * (d / np.linalg.norm(d))
 
-        r32 = r2 - r3
-        r37 = r7 - r3
+        r32 = particles.r2 - particles.r3
+        r37 = particles.r7 - particles.r3
         d = np.cross(r37, r32)
         l = np.linalg.norm(r37)
-        r4 = r3 + l * (d / np.linalg.norm(d))
+        particles.r4 = particles.r3 + l * (d / np.linalg.norm(d))
 
-        r73 = r3 - r7
-        r76 = r6 - r7
+        r73 = particles.r3 - particles.r7
+        r76 = particles.r6 - particles.r7
         d = np.cross(r76, r73)
         l = np.linalg.norm(r76)
-        r8 = r7 + l * (d / np.linalg.norm(d))
-        #r8 = r8 / np.linalg.norm(r8)
+        particles.r8 = particles.r7 + l * (d / np.linalg.norm(d))
 
-
-        r67 = r7 - r6
-        r62 = r2 - r6
+        r67 = particles.r7 - particles.r6
+        r62 = particles.r2 - particles.r6
         d = np.cross(r62, r67)
         l = np.linalg.norm(r62)
-        r5 = r6 + l * (d / np.linalg.norm(d))
-        #r5 = r5 / np.linalg.norm(r5)
-
+        particles.r5 = particles.r6 + l * (d / np.linalg.norm(d))
 
         # save time history
         phi_t.append(phi)
@@ -272,25 +266,11 @@ def solve_constraints():
         d_phi_t.append(d_phi)
 
         # save time history of vertices data
-        vertices_2_t[i] = np.array(vertices_2)
-        followers_2_t[i] = np.array([r1, r4, r8, r5])
+        vertices_2_t[i] = np.array(particles.vertices_2)
+        followers_2_t[i] = np.array([particles.r1, particles.r4, particles.r8, particles.r5])
 
         # dont allow the centre of the front face to come within 10cm of the point
-        if np.linalg.norm(p - ((r7 + r2) * 1 / 2)) < 10:
+        if np.linalg.norm(particles.p - ((particles.r7 + particles.r2) * 1 / 2)) < 10:
             break
 
     return phi_t, phi_ref_t , d_phi_t, vertices_2_t, followers_2_t, i
-
-import time
-t0 = time.perf_counter()
-phi_t, phi_ref_t , d_phi_t, vertices_2_t, followers_2_t, index = solve_constraints()
-t1 = time.perf_counter()
-
-dir = 'results/'
-np.save(dir + 'phi_t', phi_t[:index])
-np.save(dir + 'phi_ref_t', phi_ref_t[:index])
-np.save(dir + 'd_phi_t', d_phi_t[:index])
-np.save(dir + 'vertices_2_t', vertices_2_t[:index])
-np.save(dir + 'followers_2_t', followers_2_t[:index])
-np.save(dir + 'index', index)
-np.save(dir + 'p', p)
