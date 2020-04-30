@@ -1,3 +1,7 @@
 results/
 trajectories/
 test.py
+plots/
+source_*/
+.vscode
+__pycache__/
