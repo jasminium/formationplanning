@@ -143,6 +143,8 @@ plt.xlabel('iterations')
 plt.ylabel('component displacement [m]')
 plt.legend()
 
+
+"""
 print('Do antimation')
 
 # animation
@@ -199,5 +201,6 @@ writer = Writer(fps=60, metadata=dict(artist='Me'), bitrate=1800, extra_args=['-
 ani.save('results/3d-scatted-animated.mp4', writer=writer)
 
 print("done")
+"""
 
 plt.show()
