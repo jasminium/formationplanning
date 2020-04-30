@@ -3,6 +3,21 @@ from scipy import interpolate
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 import matplotlib.pyplot as plt
+import matplotlib
+from matplotlib.lines import Line2D
+import matplotlib.gridspec as gridspec
+
+
+
+width = 12.65 / 2.54
+height = width / 1.2
+
+plt.rcParams['figure.figsize'] = width, height
+font = {'family' : 'normal',
+        'weight' : 'normal',
+        'size'   : 8}
+
+matplotlib.rc('font', **font)
 
 phi_t = np.load('results/phi_t.npy')
 phi_ref_t = np.load('results/phi_ref_t.npy')
@@ -186,59 +201,75 @@ r5[:, 2].tofile(dir + "z7_t.csv", sep="\n")
 
 
 # 3d time history of the vertices
-fig = plt.figure(5)
-ax = fig.add_subplot(111, projection='3d')
+fig = plt.figure(1, constrained_layout=True)
+gs = gridspec.GridSpec(1, 1, figure=fig)
+ax = fig.add_subplot(gs[0], projection='3d')
 
 it_step = 20
 t_step = 10
 
-ax.scatter(x0_it[::it_step], y0_it[::it_step], z0_it[::it_step], color='red', s=2, label='iterations')
-ax.scatter(x0_t[::t_step], y0_t[::t_step], z0_t[::t_step], color='green', s=2, label='time')
-ax.scatter(x1_it[::it_step], y1_it[::it_step], z1_it[::it_step], color='red', s=2, label='iterations')
-ax.scatter(x1_t[::t_step], y1_t[::t_step], z1_t[::t_step], color='green', s=2, label='time')
-ax.scatter(x2_it[::it_step], y2_it[::it_step], z2_it[::it_step], color='red', s=2, label='iterations')
-ax.scatter(x2_t[::t_step], y2_t[::t_step], z2_t[::t_step], color='green', s=2, label='time')
-ax.scatter(x3_it[::it_step], y3_it[::it_step], z3_it[::it_step], color='red', s=2, label='iterations')
-ax.scatter(x3_t[::t_step], y3_t[::t_step], z3_t[::t_step], color='green', s=2, label='time')
+custom_lines = [Line2D([0], [0], color='orange', lw=2),
+                Line2D([0], [0], color='blue', lw=2),
+                Line2D([0], [0], color='red', lw=2),
+                Line2D([0], [0], marker='o', color='w',
+                          markerfacecolor='g')
+                ]
 
-ax.scatter(r1[:, 0], r1[:, 1], r1[:, 2], color='orange', s=2, label='follower')
-ax.scatter(r8[:, 0], r8[:, 1], r8[:, 2], color='orange', s=2, label='follower')
-ax.scatter(r4[:, 0], r4[:, 1], r4[:, 2], color='orange', s=2, label='follower')
-ax.scatter(r5[:, 0], r5[:, 1], r5[:, 2], color='orange', s=2, label='follower')
+ax.plot3D(x0_it[::it_step], y0_it[::it_step], z0_it[::it_step], color='red')#, s=2)# label='iterations')
+ax.plot3D(x0_t[::t_step], y0_t[::t_step], z0_t[::t_step], color='orange')#, s=2)# label='time')
+ax.plot3D(x1_it[::it_step], y1_it[::it_step], z1_it[::it_step], color='red')#, s=2)# label='iterations')
+ax.plot3D(x1_t[::t_step], y1_t[::t_step], z1_t[::t_step], color='orange')#, s=2)# label='time')
+ax.plot3D(x2_it[::it_step], y2_it[::it_step], z2_it[::it_step], color='red')#, s=2)# label='iterations')
+ax.plot3D(x2_t[::t_step], y2_t[::t_step], z2_t[::t_step], color='orange')#, s=2)# label='time')
+ax.plot3D(x3_it[::it_step], y3_it[::it_step], z3_it[::it_step], color='red')#, s=2)# label='iterations')
+ax.plot3D(x3_t[::t_step], y3_t[::t_step], z3_t[::t_step], color='orange')#, s=2)# label='time')
 
+ax.plot3D(r1[:, 0], r1[:, 1], r1[:, 2], color='blue')#, s=2)# label='follower')
+ax.plot3D(r8[:, 0], r8[:, 1], r8[:, 2], color='blue')#, s=2)# label='follower')
+ax.plot3D(r4[:, 0], r4[:, 1], r4[:, 2], color='blue')#, s=2)# label='follower')
+ax.plot3D(r5[:, 0], r5[:, 1], r5[:, 2], color='blue')#, s=2)# label='follower')
 
-ax.scatter(p[0], p[1], p[2], marker='x', label='Source')
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_zlabel('Z')
+ax.scatter(p[0], p[1], p[2], marker='x', label='Source', color='green')
+
+ax.set_xlabel('x [m]')
+ax.set_ylabel('y [m]')
+ax.set_zlabel('x [m]')
 # set scale to check if arclength is constant
 #ax.set_xlim3d(-200, 30)
 #ax.set_ylim3d(-200, 30)
 #ax.set_zlim3d(-200, 30)
-plt.legend()
+ax.legend(custom_lines, ['Lead', 'Follow', 'Lead iterations', 'Hostile'])
+fig.savefig('parameterised_trajectory.png', dpi=330)
 
-fig = plt.figure(6)
+
+fig = plt.figure(2, constrained_layout=True)
+gs = gridspec.GridSpec(1, 2, figure=fig)
+
 t = np.linspace(0, 1, len(x0_t)) * len(x0_t) * 0.05
-plt.title('Trajectory in time')
-plt.scatter(t, x0_t, label='x')
-plt.scatter(t, y0_t, label='y')
-plt.scatter(t, z0_t, label='z')
+#plt.title('Trajectory in time')
 
-plt.xlabel('time [s]')
-plt.legend()
-plt.ylabel('displacement [m]')
+ax = fig.add_subplot(gs[1])
+ax.plot(t, x0_t, label='x position')
+ax.plot(t, y0_t, label='y position')
+ax.plot(t, z0_t, label='z position')
+ax.set_xlabel('Time [s]')
+ax.set_ylabel('Displacement [m]')
+ax.legend()
 
-fig = plt.figure(7)
-plt.title('Trajectory in iterations')
-plt.plot(x0_it[::100], label='x')
-plt.plot(y0_it[::100], label='y')
-plt.plot(z0_it[::100], label='z')
+ax = fig.add_subplot(gs[0])
+#plt.title('Trajectory in iterations')
+ax.plot(x0_it, label='x position')
+ax.plot(y0_it, label='y position')
+ax.plot(z0_it, label='z position')
 
-plt.xlabel('iterations')
-plt.ylabel('displacement [m]')
-plt.legend()
+ax.set_xlabel('Iterations')
+ax.set_ylabel('Displacement [m]')
+ax.legend()
 
-fig = plt.figure(8, constrained_layout=True)
+fig.savefig('trajectory_comparison.png', dpi=330)
+
+
+fig = plt.figure(3, constrained_layout=True)
 plt.title('ds')
 plt.plot(ds0_t, label='particle 2')
 plt.plot(ds1_t, label='particle 6')
@@ -251,7 +282,7 @@ plt.xlabel('iterations')
 plt.ylabel('displacement [m]')
 plt.legend()
 
-fig = plt.figure(9, constrained_layout=True)
+fig = plt.figure(4, constrained_layout=True)
 plt.title('s')
 plt.plot(s0_t, label='particle 2')
 plt.plot(s1_t, label='particle 6')
