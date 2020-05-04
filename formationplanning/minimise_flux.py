@@ -1,18 +1,13 @@
 # author: John Hartley
 
 import numpy as np
-from scipy.constants import epsilon_0
 import math
-import sys
-import copy
 import matplotlib.animation
-import tqdm
 from scipy.optimize import minimize
 from scipy.optimize import LinearConstraint
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 import matplotlib.pyplot as plt
 import matplotlib.animation
-from matplotlib.lines import Line2D
 
 target = np.array([200, 200, 200])
 x_t = []
