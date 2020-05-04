@@ -4,13 +4,18 @@ import numpy as np
 import math
 import matplotlib.animation
 from scipy.optimize import minimize
+from scipy.optimize import BFGS
 from scipy.optimize import LinearConstraint
+from scipy.optimize import NonlinearConstraint
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 import matplotlib.pyplot as plt
 import matplotlib.animation
+import time
 
 target = np.array([200, 200, 200])
 x_t = []
+
+s = 5
 
 def flux_through_triangle(A, B, C, P):
     a = P - A
@@ -115,43 +120,67 @@ def callback(xk, state):
     x_t.append(xk)
     return False
 
+def cons_f(x):
+    """"constrain the connecting edges"""
+    p = x.reshape((4, 3), order='F')
+
+    a = p[0] - p[1]
+    b = p[1] - p[2]
+    c = p[2] - p[3]
+    d = p[3] - p[0]
+
+    return [
+        a.dot(a),
+        b.dot(b),
+        c.dot(c),
+        d.dot(d)
+    ]
+
+def cons_h(x, v):
+    return np.zeros(12)
+
 def minimise_flux():
     
     global target
-    target = np.array([-200, 200, 200])
+    target = np.array([-10, 10, 10])
     
     surface = np.array([
             [0, 0, 0],
-            [0, 1, 0],
-            [0, 1, 1],
-            [0, 0, 1]])
+            [0, 2, 0],
+            [0, 2, 2],
+            [0, 0, 2]])
 
     x0 = surface.flatten(order='F')
 
-    result = minimize(
-        flux, x0=x0, method='trust-constr', tol=1e-6, options={'maxiter': 2000}, jac=jacobian_flux, callback=callback)
-    
-    print(result.x.reshape((4, 3), order='F'))
+    nonlinear_constraint = NonlinearConstraint(cons_f, 2, 2, jac='2-point', hess=BFGS())
 
+    t0 = time.perf_counter()
+
+    result = minimize(
+        flux, x0=x0, method='trust-constr', tol=1e-8, options={'maxiter': 10000}, jac=jacobian_flux, callback=callback, constraints=[nonlinear_constraint])
+    
+    print(result)
+    print('minimisation time', time.perf_counter() - t0)
 
     points = result.x.reshape((4, 3), order='F')
 
     fig = plt.figure(1, constrained_layout=True)
     ax = fig.add_subplot(111, projection='3d')
-    
+    colors = ['red', 'green', 'blue', 'yellow']
+
     for i, p in enumerate(points):
-        ax.scatter(p[0], p[1], p[2], label='point {} final'.format(i))
+        ax.scatter(p[0], p[1], p[2], s=2, color=colors[i], label='point {} final'.format(i))
 
-    #for i, p in enumerate(surface):
-    #    ax.scatter(p[0], p[1], p[2], label='point {} initial'.format(i))
+    for i, p in enumerate(surface):
+        ax.scatter(p[0], p[1], p[2], s=2, label='point {} initial'.format(i))
 
-    # plot journey points
-    for xj in x_t:
+    #plot journey points
+    for xj in x_t[::10]:
         surfacej = xj.reshape((4, 3), order='F')
-        for p in surfacej:
-            ax.scatter(p[0], p[1], p[2], s=2)
+        for i, p in enumerate(surfacej):
+            ax.scatter(p[0], p[1], p[2], s=2, color=colors[i])
     
-    ax.scatter(target[0], target[1], target[2], label='Target')
+    ax.scatter(target[0], target[1], target[2], s=2, label='Target')
 
     ax.legend()
     plt.show()
