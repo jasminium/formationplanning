@@ -8,6 +8,7 @@ from scipy.optimize import BFGS
 from scipy.optimize import SR1
 from scipy.optimize import LinearConstraint
 from scipy.optimize import NonlinearConstraint
+from scipy.optimize import curve_fit
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 import matplotlib.pyplot as plt
 import matplotlib.animation
@@ -17,6 +18,22 @@ target = np.array([200, 200, 200])
 x_t = []
 
 s = 5
+
+
+def curve_fit_model(x, a, b, c, d, e, f, g, h):
+
+    p = [a, b, c, d, e, f, g, h]
+    c = 0
+    for i, p_i in enumerate(p):
+        c += p_i * np.power(x, i)
+
+    return c
+
+
+def moving_average(a, n=3) :
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
 
 def flux_through_triangle(A, B, C, P):
     a = P - A
@@ -161,7 +178,7 @@ def minimise_flux():
         method='trust-constr',
         tol=1e-8,
         options={'maxiter': 10000,
-                 'initial_tr_radius': 1e-3
+                 'initial_tr_radius': 1
                 },
         jac=jacobian_flux,
         callback=callback,
@@ -172,8 +189,10 @@ def minimise_flux():
     points = result.x.reshape((4, 3), order='F')
 
     # plot trajectories
-    fig = plt.figure(1, constrained_layout=True)
-    ax = fig.add_subplot(111, projection='3d')
+    #fig = plt.figure(1, constrained_layout=True)
+    #ax = fig.add_subplot(111, projection='3d')
+
+    fig, ax = plt.subplots(subplot_kw={'projection': '3d'})
 
     colors_init = ['pink', 'green', 'red', 'blue']
     colors_final = ['yellow', 'yellow', 'yellow', 'green']
@@ -182,17 +201,35 @@ def minimise_flux():
     x_j = np.reshape(x_t, (len(x_t), 4, 3), order='F')
     c_s = np.arange(0, x_j.shape[0])
 
-    # plot positions at each iteration
-    for i in range(4):
-        ax.scatter(x_j[:, i, 0], x_j[:, i, 1], x_j[:, i, 2], c=c_s, cmap=cmaps[i], s=4)
+    # plot in the browser
+    import plotly.graph_objects as go
 
-    # plot the staring points
-    for i, p in enumerate(surface):
-        ax.scatter(p[0], p[1], p[2], s=60, linewidth=1, color=colors_init[i], label='point {} initial'.format(i))
+    style_3 =dict(
+        size=2,
+        color=c_s,               # set color to an array/list of desired values
+        colorscale='rainbow',   # choose a colorscale
+        opacity=0.8
+    )
 
-    ax.scatter(target[0], target[1], target[2], marker='x', s=20, color='purple', label='Target')
+    fig = go.Figure(data=[
+        go.Scatter3d(x=x_j[:, 0, 0], y=x_j[:, 0, 1], z=x_j[:, 0, 2], marker=style_3, name='Drone 1'),
+        go.Scatter3d(x=x_j[:, 1, 0], y=x_j[:, 1, 1], z=x_j[:, 1, 2], marker=style_3, name='Drone 2'),
+        go.Scatter3d(x=x_j[:, 2, 0], y=x_j[:, 2, 1], z=x_j[:, 2, 2], marker=style_3, name='Drone 3'),
+        go.Scatter3d(x=x_j[:, 3, 0], y=x_j[:, 3, 1], z=x_j[:, 3, 2], marker=style_3, name='Drone 4')
+        ])
+    
 
-    ax.legend()
-    plt.show()
+    fig.update_layout(
+        title="Drone Trajectories",
 
+        font=dict(
+            family="Courier New, monospace",
+            size=18,
+            color="#7f7f7f"
+        )
+    )
+    fig.show()
+
+    fig.write_html("optimsation.html")
+    
 minimise_flux()
