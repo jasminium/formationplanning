@@ -5,6 +5,7 @@ import math
 import matplotlib.animation
 from scipy.optimize import minimize
 from scipy.optimize import BFGS
+from scipy.optimize import SR1
 from scipy.optimize import LinearConstraint
 from scipy.optimize import NonlinearConstraint
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
@@ -75,7 +76,7 @@ def jacobian_flux(x):
     # jacobian
     j = np.zeros(12)
 
-    dx = 1e-6
+    dx = 1e-4
 
     for i, x_i in enumerate(x):
 
@@ -142,45 +143,54 @@ def cons_h(x, v):
 def minimise_flux():
     
     global target
-    target = np.array([-10, 10, 10])
+    target = np.array([10, 10, 10])
     
     surface = np.array([
             [0, 0, 0],
-            [0, 2, 0],
-            [0, 2, 2],
-            [0, 0, 2]])
+            [0, 5, 0],
+            [0, 5, 5],
+            [0, 0, 5]])
 
+    # "Starting value guess"
     x0 = surface.flatten(order='F')
 
-    nonlinear_constraint = NonlinearConstraint(cons_f, 2, 2, jac='2-point', hess=BFGS())
-
-    t0 = time.perf_counter()
+    nonlinear_constraint = NonlinearConstraint(cons_f, 5**2, 5**2, jac='2-point', hess=BFGS())
 
     result = minimize(
-        flux, x0=x0, method='trust-constr', tol=1e-8, options={'maxiter': 10000}, jac=jacobian_flux, callback=callback, constraints=[nonlinear_constraint])
+        flux, x0=x0,
+        method='trust-constr',
+        tol=1e-8,
+        options={'maxiter': 10000,
+                 'initial_tr_radius': 1e-3
+                },
+        jac=jacobian_flux,
+        callback=callback,
+        constraints=[nonlinear_constraint])
     
     print(result)
-    print('minimisation time', time.perf_counter() - t0)
 
     points = result.x.reshape((4, 3), order='F')
 
+    # plot trajectories
     fig = plt.figure(1, constrained_layout=True)
     ax = fig.add_subplot(111, projection='3d')
-    colors = ['red', 'green', 'blue', 'yellow']
 
-    for i, p in enumerate(points):
-        ax.scatter(p[0], p[1], p[2], s=2, color=colors[i], label='point {} final'.format(i))
+    colors_init = ['pink', 'green', 'red', 'blue']
+    colors_final = ['yellow', 'yellow', 'yellow', 'green']
+    cmaps = ['spring', 'summer', 'autumn', 'winter']
 
+    x_j = np.reshape(x_t, (len(x_t), 4, 3), order='F')
+    c_s = np.arange(0, x_j.shape[0])
+
+    # plot positions at each iteration
+    for i in range(4):
+        ax.scatter(x_j[:, i, 0], x_j[:, i, 1], x_j[:, i, 2], c=c_s, cmap=cmaps[i], s=4)
+
+    # plot the staring points
     for i, p in enumerate(surface):
-        ax.scatter(p[0], p[1], p[2], s=2, label='point {} initial'.format(i))
+        ax.scatter(p[0], p[1], p[2], s=60, linewidth=1, color=colors_init[i], label='point {} initial'.format(i))
 
-    #plot journey points
-    for xj in x_t[::10]:
-        surfacej = xj.reshape((4, 3), order='F')
-        for i, p in enumerate(surfacej):
-            ax.scatter(p[0], p[1], p[2], s=2, color=colors[i])
-    
-    ax.scatter(target[0], target[1], target[2], s=2, label='Target')
+    ax.scatter(target[0], target[1], target[2], marker='x', s=20, color='purple', label='Target')
 
     ax.legend()
     plt.show()
