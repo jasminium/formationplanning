@@ -1,7 +1,4 @@
-results/
-trajectories/
-test.py
-plots/
-source_*/
+target_*/
 .vscode
+.DS_Store
 __pycache__/
