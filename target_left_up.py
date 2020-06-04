@@ -53,7 +53,7 @@ f_t_int = trajectory.generate_hemisphere_followers(x_t_int)
 v = np.concatenate((x_t_int, f_t_int), axis=1)
 trajectory.export_trajectory(v, directory)
 # plot the trajectories
-plot(x_t_int[::10], target, r, directory=directory, phi=phi_t)
+plot(x_t_int, target, r, directory=directory, phi=phi_t)
 
 print('flux final', phi_t[-1])
 print('flux proportion', phi_t[-1] / 4 / np.pi)
