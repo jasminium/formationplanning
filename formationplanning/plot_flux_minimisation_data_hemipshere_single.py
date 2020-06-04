@@ -181,6 +181,8 @@ def plot(x_j, target, target_r, phi=None, directory=None):
     ani = animation.FuncAnimation(fig, update_graph, vertices.shape[0],
                                 interval=100, blit=False)
 
+    ani.save(directory / 'animation.gif', writer='imagemagick', fps=60)
+
     fig = plt.figure(3)
 
     plt.plot(phi)
@@ -255,10 +257,5 @@ def plot(x_j, target, target_r, phi=None, directory=None):
         if directory is not None:
             directory.mkdir(exist_ok=True)
             plt.savefig(directory / 'plate_{}.png'.format(i), dpi=330)
-
-    # save animation
-    #Writer = matplotlib.animation.writers['ffmpeg']
-    #writer = Writer(fps=60, metadata=dict(artist='Me'), bitrate=1800, extra_args=['-vcodec', 'libx264'])
-    #ani.save('3d-scatted-animated.mp4', writer=writer)
 
     return fv

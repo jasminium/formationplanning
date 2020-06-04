@@ -201,6 +201,8 @@ def plot(x_j, targets, target_r, phi=None, directory=None):
 
     ani = animation.FuncAnimation(fig, update_graph, vertices.shape[0],
                                 interval=100, blit=False)
+    
+    ani.save(directory / 'animation.gif', writer='imagemagick', fps=60)
 
     fig = plt.figure(3)
 
