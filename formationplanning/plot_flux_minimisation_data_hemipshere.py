@@ -26,7 +26,7 @@ import matplotlib.animation as animation
 
 def plot(x_j, targets, target_r, phi=None, directory=None):
 
-    
+
     SMALL_SIZE = 8
     BIGGER_SIZE = 12
 
@@ -53,25 +53,25 @@ def plot(x_j, targets, target_r, phi=None, directory=None):
     x_j = x_j[::1]
     c_s = np.arange(0, x_j.shape[0])
 
-    r2 = x_j[:, 0, :] 
-    r6 = x_j[:, 1, :] 
-    r7 = x_j[:, 2, :] 
+    r2 = x_j[:, 0, :]
+    r6 = x_j[:, 1, :]
+    r7 = x_j[:, 2, :]
     r3 = x_j[:, 3, :]
 
     # generate the A B D basis
 
     c = 0.5 * (r2 + r7)
-    
+
     a = c - r7
     a_l = np.linalg.norm(a, axis=1)
     a_l = np.stack((a_l, a_l, a_l), axis=1)
     a = np.multiply(a, 1 / a_l)
-    
+
     b = c - r6
     b_l = np.linalg.norm(b, axis=1)
     b_l = np.stack((b_l, b_l, b_l), axis=1)
     b = np.multiply(b, 1 / b_l)
-    
+
     d = np.cross(a, b)
     d_l = np.linalg.norm(d, axis=1)
     d_l = np.stack((d_l, d_l, d_l), axis=1)
@@ -95,13 +95,13 @@ def plot(x_j, targets, target_r, phi=None, directory=None):
     f3 = (d_2 * d + r_2 * b) + c
     f4 = (d_2 * d - r_2 * b) + c
     f5 = (r * d) + c
-    
+
     # find the centre of mass of the targets
     n = targets.shape[0]
     centre = np.zeros((3))
     for t in targets:
         centre += t
-    
+
     centre = centre / n
 
     boo = ax.scatter(x_j[:, 0, 0], x_j[:, 0, 1], x_j[:, 0, 2], c=c_s, cmap='winter', marker='o', depthshade=False)
@@ -157,7 +157,7 @@ def plot(x_j, targets, target_r, phi=None, directory=None):
     ax.set_ylim(ymin, ymax)
     ax.set_zlim(zmin, zmax)
     ax.plot_trisurf(vertices[0, :, 0], vertices[0, :, 1], vertices[0, :, 2], color='blue')
-    
+
     ax.plot_surface(x, y, z, color="r")
 
 
@@ -169,20 +169,20 @@ def plot(x_j, targets, target_r, phi=None, directory=None):
         ax.set_xlabel('x [m]')
         ax.set_ylabel('y [m]')
         ax.set_zlabel('z [m]')
-        
+
         for target in targets:
             u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
             x = target_r * np.cos(u) * np.sin(v) + target[0]
             y = target_r * np.sin(u) * np.sin(v) + target[1]
             z = target_r * np.cos(v) + target[2]
             ax.plot_surface(x, y, z, color="blue")
-        
+
         u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
         x = target_r * np.cos(u) * np.sin(v) + centre[0]
         y = target_r * np.sin(u) * np.sin(v) + centre[1]
         z = target_r * np.cos(v) + centre[2]
         ax.plot_surface(x, y, z, color="red")
- 
+
         #graph_1 = ax.plot_trisurf(vertices[j, :, 0], vertices[j, :, 1], vertices[j, :, 2], color='blue')
         #graph_2 = ax.plot_trisurf(followers[j, :, 0], followers[j, :, 1], followers[j, :, 2], color='green')
 
@@ -201,7 +201,7 @@ def plot(x_j, targets, target_r, phi=None, directory=None):
 
     ani = animation.FuncAnimation(fig, update_graph, vertices.shape[0],
                                 interval=100, blit=False)
-    
+    plt.show()
     ani.save(directory / 'animation.gif', writer='imagemagick', fps=60)
 
     fig = plt.figure(3)
@@ -253,7 +253,7 @@ def plot(x_j, targets, target_r, phi=None, directory=None):
         ax.scatter(followers[index * gap, 2, 0], followers[index * gap, 2, 1], followers[index * gap, 2, 2], color='fuchsia', marker='o', s=40)
         ax.scatter(followers[index * gap, 3, 0], followers[index * gap, 3, 1], followers[index * gap, 3, 2], color='fuchsia', marker='o', s=40)
         ax.scatter(followers[index * gap, 4, 0], followers[index * gap, 4, 1], followers[index * gap, 4, 2], color='orange', marker='o', s=40)
-        
+
         for target in targets:
             u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
             x = target_r * np.cos(u) * np.sin(v) + target[0]
