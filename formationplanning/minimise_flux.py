@@ -34,7 +34,7 @@ s = 5
 def flux_through_triangle(A, B, C, P):
     """
         Evaluate the solid angle illuminating a triangle.
-        
+
         The triangle is defined by defined A, B, C by a point P.
     """
 
@@ -138,7 +138,7 @@ def jacobian_flux(x):
     np.array(12)
         The flux jacobian
     """
-    
+
     # jacobian
     j = np.zeros(12)
 
@@ -164,9 +164,9 @@ def jacobian_flux(x):
 
         # recover original position
         x[i] = x_i
-    
+
     return j
-    
+
 def callback(xk, state):
     """Memorise the state at each iteration of the minimisation."""
     # save the positions
@@ -315,12 +315,12 @@ def minimise_flux(targets, surface, l=None):
 
     Parameters
     ----------
-    targets : np.array((n, 3)) 
+    targets : np.array((n, 3))
         array of targets or single target with Numpy single dimension.
-    
+
     surface : np.array((4, 3))
         four 3d points which define a surface.
-    
+
     l: float (optional)
         length of contraint for the sidelength of the open surface. For multiple targets
         this is calculated internally.
@@ -349,25 +349,25 @@ def minimise_flux(targets, surface, l=None):
         centre = np.zeros((3))
         for t in targets:
             centre += t
-        
+
         centre = centre / n
-        
+
         d = []
         for t in targets:
             d.append(np.linalg.norm(t - centre))
-        
+
         # max side length of formation. 10 is a padding offset
         l = (2 * np.amax(d) + 10) / np.sqrt(2)
 
         # new target is the centre of mass
         target = centre
-    
+
     # use given target
     else:
         target = targets
 
     nonlinear_constraint_1 = NonlinearConstraint(cons_f, l**2, l**2, jac='2-point', hess=BFGS())
-    
+
     # some other contraints to play with
     # nonlinear_constraint_3 = NonlinearConstraint(cons_area, 25, np.inf, jac='2-point', hess=BFGS())
     # nonlinear_constraint_2 = NonlinearConstraint(cons_flux, 10 * 4 * np.pi, 10 * 4 * np.pi, jac='2-point', hess=BFGS())
@@ -388,7 +388,7 @@ def minimise_flux(targets, surface, l=None):
         constraints=[
                     # sides must have some minimum length
                     nonlinear_constraint_1,
-                    
+
                     # other constraints to play with
                     # flux constraint
                     #nonlinear_constraint_2,
@@ -397,7 +397,7 @@ def minimise_flux(targets, surface, l=None):
                     # sides are equal
                     #nonlinear_constraint_5
         ])
-    
+
     x_j = np.reshape(x_t, (len(x_t), 4, 3), order='F')
 
     return x_j, phi_t

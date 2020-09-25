@@ -57,4 +57,3 @@ plot(x_t_int[::10], target, 1, directory=directory, phi=phi_t)
 
 print('flux final', phi_t[-1])
 print('flux proportion', phi_t[-1] / 4 / np.pi)
-

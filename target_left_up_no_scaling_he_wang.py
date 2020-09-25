@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-from formationplanning.minimise_flux import minimise_flux
+from formationplanning.linear_least_squares import solve_constraints as minimise_flux
 from formationplanning.plot_flux_minimisation_data_hemipshere_single import plot
 from formationplanning.trajectory import map_to_time
 from formationplanning.trajectory import interpolate_trajectory
@@ -41,8 +41,9 @@ r = 2.5
 # target formation sidelength
 l = r * 2
 
-directory = pathlib.Path('target_left_up_no_scaling')
+directory = pathlib.Path('target_left_up_no_scaling_he_wang')
 x_t, phi_t = minimise_flux(target, surface, l)
+
 # map the solution to time domain
 t = map_to_time(x_t)
 # interpolate the trajectory at every 0.1 seconds.

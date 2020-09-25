@@ -18,14 +18,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-from formationplanning.minimise_flux import minimise_flux
+from formationplanning.linear_least_squares import solve_constraints as minimise_flux
 from formationplanning.plot_flux_minimisation_data_hemipshere_single import plot
 from formationplanning.trajectory import map_to_time
 from formationplanning.trajectory import interpolate_trajectory
 from formationplanning import trajectory
 import pathlib
 
-target = np.array((-20, 20, 20))
+target = np.array((50, 50, 50))
 
 # initial drone separation
 d = 5
@@ -41,8 +41,9 @@ r = 2.5
 # target formation sidelength
 l = r * 2
 
-directory = pathlib.Path('target_left_up_no_scaling')
+directory = pathlib.Path('target_right_up_no_scaling_he_wang')
 x_t, phi_t = minimise_flux(target, surface, l)
+
 # map the solution to time domain
 t = map_to_time(x_t)
 # interpolate the trajectory at every 0.1 seconds.
@@ -53,7 +54,7 @@ f_t_int = trajectory.generate_hemisphere_followers(x_t_int)
 v = np.concatenate((x_t_int, f_t_int), axis=1)
 trajectory.export_trajectory(v, directory)
 # plot the trajectories
-plot(x_t_int[::1], target, r, directory=directory, phi=phi_t)
+plot(x_t_int[::10], target, 1, directory=directory, phi=phi_t)
 
 print('flux final', phi_t[-1])
 print('flux proportion', phi_t[-1] / 4 / np.pi)
