@@ -24,7 +24,7 @@ import matplotlib.cm as cm
 import numpy as np
 import matplotlib.animation as animation
 
-def plot(x_j, targets, target_r, phi=None, directory=None, cm=True):
+def plot(x_j, targets, target_r, obstacles, phi=None, directory=None, cm=True):
 
 
     SMALL_SIZE = 8
@@ -121,6 +121,11 @@ def plot(x_j, targets, target_r, phi=None, directory=None, cm=True):
         y = target_r * np.sin(u) * np.sin(v) + target[1]
         z = target_r * np.cos(v) + target[2]
         ax.plot_surface(x, y, z, color="blue")
+    
+    for obstacle in obstacles:
+        poly  = Poly3DCollection(obstacle)
+        poly.set_color('orange')
+        ax.add_collection3d(poly)
 
     if cm:
         u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
@@ -183,6 +188,10 @@ def plot(x_j, targets, target_r, phi=None, directory=None, cm=True):
             y = target_r * np.sin(u) * np.sin(v) + centre[1]
             z = target_r * np.cos(v) + centre[2]
             ax.plot_surface(x, y, z, color="red")
+        for obstacle in obstacles:
+            poly  = Poly3DCollection(obstacle)
+            poly.set_color('orange')
+            ax.add_collection3d(poly)
 
         #graph_1 = ax.plot_trisurf(vertices[j, :, 0], vertices[j, :, 1], vertices[j, :, 2], color='blue')
         #graph_2 = ax.plot_trisurf(followers[j, :, 0], followers[j, :, 1], followers[j, :, 2], color='green')

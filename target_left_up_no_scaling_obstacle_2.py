@@ -18,14 +18,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-from formationplanning.minimise_flux import minimise_flux
-from formationplanning.plot_flux_minimisation_data_hemipshere_single import plot
+from formationplanning.minimise_flux import minimise_flux as minimise_flux_f
+import formationplanning.minimise_flux as minimise_flux
+from formationplanning.plot_flux_minimisation_data_hemipshere import plot
 from formationplanning.trajectory import map_to_time
 from formationplanning.trajectory import interpolate_trajectory
 from formationplanning import trajectory
 import pathlib
 
-target = np.array((10, 10, 10))
+target = np.array((-20, 20, 20))
 
 # initial drone separation
 d = 5
@@ -36,13 +37,14 @@ surface = np.array([
     [0, 0, d]])
 
 # hostile radius
-r = 20
+r = 2.5
 
 # target formation sidelength
 l = r * 2
 
-directory = pathlib.Path('target_right_up')
-x_t, phi_t = minimise_flux(target, surface, l)
+directory = pathlib.Path('target_left_up_no_scaling_obstacle_2')
+minimise_flux.n_obs = 2
+x_t, phi_t = minimise_flux_f(target, surface, l)
 # map the solution to time domain
 t = map_to_time(x_t)
 # interpolate the trajectory at every 0.1 seconds.
@@ -53,7 +55,14 @@ f_t_int = trajectory.generate_hemisphere_followers(x_t_int)
 v = np.concatenate((x_t_int, f_t_int), axis=1)
 trajectory.export_trajectory(v, directory)
 # plot the trajectories
-plot(x_t_int[::10], target, r, directory=directory, phi=phi_t)
+obs = np.array([-10, 10, 10])
+obs_2 = np.array([-10, 20, 10])
+
+plot(x_t_int[::1], np.array([target, obs, obs_2]), 1, directory=directory, phi=phi_t, cm=False)
+
+plt.plot(phi_t)
+plt.title('flux')
+plt.show()
 
 print('flux final', phi_t[-1])
 print('flux proportion', phi_t[-1] / 4 / np.pi)
