@@ -28,7 +28,7 @@ The following examples show the simulated physics based trajectories of 3d parti
 ## Installation
 
 ```bash
-git clone https://github.com/jasminium/formationplanning.git
+git clone https://gitfront.io/r/johnmatthewhartley/c81e9e54cb2749d718e54ae6517bca517097e1ae/formationplanning.git
 cd formationplanning
 python setup.py install
 ```
