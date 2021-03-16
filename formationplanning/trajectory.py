@@ -16,24 +16,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from pathlib import Path
 
 import numpy as np
 from scipy import interpolate
-from pathlib import Path
 from scipy.optimize import NonlinearConstraint
 from scipy.optimize import minimize
 from scipy.optimize import BFGS
 from scipy.optimize import NonlinearConstraint
-import sys
 import toppra as ta
 import toppra.constraint as constraint
 import toppra.algorithm as algo
-import numpy as np
 import matplotlib.pyplot as plt
-import sys
 import matplotlib.animation as animation
-
-
 
 ta.setup_logging("INFO")
 
@@ -46,29 +41,12 @@ a_max = 10
 # sampling interval
 s_i = 0.01
 
-"""
-def preprocess(x):
-    x_t_s = []
-
-    # remove points if they dont move much
-    for i in range(x.shape[0] - 1):    
-        d1 = np.linalg.norm(x[i+1, 0, :] - x[i, 0, :])
-        d2 = np.linalg.norm(x[i+1, 1, :] - x[i, 1, :])
-        d3 = np.linalg.norm(x[i+1, 2, :] - x[i, 2, :])
-        d4 = np.linalg.norm(x[i+1, 3, :] - x[i, 3, :])
-        d = d1 + d2 + d3 + d4
-        if d > 100e-2:
-            x_t_s.append(x[i, :, :])
-
-    return np.array(x_t_s)
-"""
-
 def preprocess(x):
     # last saved point
     y = x[0, :, :]
     x_t_s = [y]
 
-    # remove points if they dont move much
+    # filter small changes in position
     for i in range(x.shape[0] - 1):    
         d1 = np.linalg.norm(x[i+1, 0, :] - y[0, :])
         d2 = np.linalg.norm(x[i+1, 1, :] - y[1, :])
@@ -307,7 +285,6 @@ def test_traj_min_v3(x0, x1, v0):
         # however no change in position is also just 0 acceleration
         #a = (v1 - v0) / obj(v1)
         #print('a', a)
-        #sys.exit()
         a_n = (np.linalg.norm(v1)**2 - np.linalg.norm(v0)**2) / 2 / np.linalg.norm(dx)
         #a = np.nan_to_num(a, copy=True, nan=0.0, posinf=0.0, neginf=0.0)
         #return np.linalg.norm(a)
@@ -394,12 +371,12 @@ def generate_follower_path(x):
     # generate the A B D basis
     c = 0.5 * (r2 + r7)
 
-    a = c - r7
+    a = r7 - c
     a_l = np.linalg.norm(a, axis=1)
     a_l = np.stack((a_l, a_l, a_l), axis=1)
     a = np.multiply(a, 1 / a_l)
 
-    b = c - r6
+    b = r6 - c
     b_l = np.linalg.norm(b, axis=1)
     b_l = np.stack((b_l, b_l, b_l), axis=1)
     b = np.multiply(b, 1 / b_l)
@@ -431,3 +408,13 @@ def generate_follower_path(x):
     followers = np.stack((f1, f2, f3, f4, f5), axis=1)
 
     return followers
+
+def path_length(path):
+    # total path lengths
+    path_length = 0
+    for i in range(path.shape[0] - 1):
+        for j in range(4):
+            p0 = path[i, j, :]
+            p1 = path[i+1, j, :]
+            path_length += np.linalg.norm(p1-p0)
+    return path_length

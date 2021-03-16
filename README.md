@@ -1,6 +1,7 @@
-Particle Path Generation
+Formation Planning
 ========================
 
-A collection of scripts, so far, which generate collision free trajctories for formations of particles toward some point of interest.
-
-![example flight](animation.gif)
+![example flight](example_b_1/Figure\ 4.gif)
+![example flight](example_b_1/Figure\ 6.gif)
+![example flight](example_b_1/Figure\ 9.gif)
+![example flight](example_b_1/Figure\ 10.gif)
