@@ -139,7 +139,7 @@ def plot(x_j, targets, target_r, phi=None, directory=None,
     ani.save(directory / fn, writer=writer)
 
 def sphere(centre, r):
-    u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
+    u, v = np.mgrid[0:2*np.pi:100j, 0:np.pi:100j]
     x = r * np.cos(u) * np.sin(v) + centre[0]
     y = r * np.sin(u) * np.sin(v) + centre[1]
     z = r * np.cos(v) + centre[2]

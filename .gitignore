@@ -1,7 +1,10 @@
 notes/
+example_a*
+example_b*
+example_c*
 example*/*
-example_a_1
-!example*/*gif
+!example_d_*/*gif
+!example_e_*/*gif
 backup/
 
 # Editors
