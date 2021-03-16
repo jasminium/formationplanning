@@ -3,7 +3,7 @@ AI Formation Planning
 
 ## Overview
 
-This software generates collision free trajectories for a hemipsherical formation of drones tasked with flying toward and covering a target.
+This software generates collision free trajectories for a hemispherical formation of drones tasked with flying toward and covering a target.
 
 ## Installation
 
@@ -28,15 +28,15 @@ The following examples show the simulated physics based trajectories of 3d parti
 
 ![example flight](example_d_1/Figure%209.gif)
 
-2. The hemisphere tracks toward a target which is located in the opposite direction to its intial position. The hemipshere manouvers intelligently to increase the coverage of the target.
+2. The hemisphere tracks toward a target which is located in the opposite direction to its initial position. The hemisphere manoeuver intelligently to increase the coverage of the target.
 
 ![example flight](example_d_2/Figure%2010.gif)
 
-3. The formation is intially small in comparison to the target. It rescales itself and tracks toward the target
+3. The formation is initially small in comparison to the target. It rescales itself and tracks toward the target
 
 ![example flight](example_e_1/Figure.gif)
 
-4. The formation is intially large in comparison to the target. It rescales itself and tracks toward the target.
+4. The formation is initially large in comparison to the target. It rescales itself and tracks toward the target.
 
 ![example flight](example_e_2/Figure.gif)
 
@@ -48,4 +48,4 @@ This solution is efficient since only the 4 drones on the front face shown in co
 
 The formation retains its shape throughout the simulation - this is advantageous for scenarios where the drones should maintain an optimal coverage of the target.
 
-Once the paths are obtained they are parameterised and subjected to performance constraints, velocity and acceleration, using time-optimal path parameterisation. The planned trajectories are smooth enough to use for robotic control.
+Once the paths are obtained they are parameterized and subjected to performance constraints, velocity and acceleration, using time-optimal path parameterization. The planned trajectories are smooth enough to use for robotic control.
