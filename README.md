@@ -50,3 +50,10 @@ This solution is efficient since only the 4 drones on the front face shown in co
 The formation retains its shape throughout the simulation - this is advantageous for scenarios where the drones should maintain an optimal coverage of the target.
 
 Once the paths are obtained they are parameterized and subjected to performance constraints, velocity and acceleration, using time-optimal path parameterization. The planned trajectories are smooth enough to use for robotic control.
+
+## Cite
+
+Read our paper [here](https://arxiv.org/abs/2103.09184)
+
+Formation Control for UAVs Using a Flux Guided Approach - 
+John Hartley, Hubert P. H. Shum, Edmond S. L. Ho, He Wang, Subramanian Ramamoorthy
