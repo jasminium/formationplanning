@@ -55,5 +55,5 @@ Once the paths are obtained they are parameterized and subjected to performance 
 
 Read our paper [here](https://arxiv.org/abs/2103.09184)
 
-Formation Control for UAVs Using a Flux Guided Approach - 
-John Hartley, Hubert P. H. Shum, Edmond S. L. Ho, He Wang, Subramanian Ramamoorthy
+John Hartley, Hubert P. H. Shum, Edmond S. L. Ho, He Wang, Subramanian Ramamoorthy - Formation Control for UAVs Using a Flux Guided Approach.
+
